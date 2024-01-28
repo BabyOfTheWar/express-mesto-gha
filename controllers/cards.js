@@ -57,7 +57,7 @@ const likeCard = async (req, res) => {
             res.status(404).send({message: 'Карточка не найдена'});
         }
     } catch (error) {
-        res.status(500).send({message: 'Внутренняя ошибка сервера'});
+        res.status(400).send({message: 'Внутренняя ошибка сервера'});
     }
 };
 
@@ -78,7 +78,7 @@ const dislikeCard = async (req, res) => {
             res.status(404).send({message: 'Карточка не найдена'});
         }
     } catch (error) {
-        res.status(500).send({message: 'Внутренняя ошибка сервера'});
+        res.status(400).send({message: 'Внутренняя ошибка сервера'});
     }
 };
 

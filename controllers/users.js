@@ -61,24 +61,33 @@ const createUser = async (req, res) => {
 
 const updateProfile = async (req, res) => {
     const userId = req.user._id;
-    const {name, about} = req.body;
+    const { name, about } = req.body;
+
+    if (name && (name.length < 2 || name.length > 30)) {
+        return res.status(400).send({ message: 'Некорректная длина поля name' });
+    }
+
+    if (about && (about.length < 2 || about.length > 30)) {
+        return res.status(400).send({ message: 'Некорректная длина поля about' });
+    }
 
     try {
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            {name, about},
-            {new: true}
+            { name, about },
+            { new: true }
         );
 
         if (updatedUser) {
             res.status(200).json(updatedUser);
         } else {
-            res.status(404).send({message: 'Пользователь не найден'});
+            res.status(404).send({ message: 'Пользователь не найден' });
         }
     } catch (error) {
-        res.status(500).send({message: 'Внутренняя ошибка сервера'});
+        res.status(500).send({ message: 'Внутренняя ошибка сервера' });
     }
 };
+
 
 const updateAvatar = async (req, res) => {
     const userId = req.user._id;
