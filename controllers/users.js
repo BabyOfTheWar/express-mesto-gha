@@ -13,7 +13,7 @@ const getUserById = async (req, res) => {
     const userId = req.params.userId;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-        return res.status(400).json({ message: 'Некорректный формат ID пользователя' });
+        return res.status(400).json({message: 'Некорректный формат ID пользователя'});
     }
 
     try {
@@ -27,32 +27,33 @@ const getUserById = async (req, res) => {
                 _id: user._id,
             });
         } else {
-            res.status(404).json({ message: 'Пользователь не найден' });
+            res.status(404).json({message: 'Пользователь не найден'});
         }
     } catch (error) {
-        res.status(500).json({ message: 'Internal Server Error' });
+        res.status(500).json({message: 'Internal Server Error'});
     }
 };
 
 const createUser = async (req, res) => {
     const {name, about, avatar} = req.body;
-    if (!name || !about || !avatar) {
-        return res.status(400).json({ error: 'В запросе отсутствуют обязательные поля' });
+
+    if (!name || name.length < 2 || name.length > 30) {
+        return res.status(400).json({error: 'Некорректная длина поля name'});
     }
 
-    if (name.length < 2 || name.length > 30) {
-        return res.status(400).json({ error: 'Некорректная длина поля name' });
+    if (!about || about.length < 2 || about.length > 30) {
+        return res.status(400).json({error: 'Некорректная длина поля about'});
     }
 
-    if (about.length < 2 || about.length > 30) {
-        return res.status(400).json({ error: 'Некорректная длина поля about' });
+    if (!avatar) {
+        return res.status(400).json({error: 'В запросе отсутствует обязательное поле avatar'});
     }
 
     try {
-        const user = await User.create({ name, about, avatar });
+        const user = await User.create({name, about, avatar});
         res.status(201).json(user);
     } catch (error) {
-        res.status(400).json({ error: 'Ошибка в запросе' });
+        res.status(400).json({error: 'Неверный запрос'});
     }
 };
 
