@@ -14,4 +14,8 @@ router.patch('/users/me', updateProfile);
 
 router.patch('/users/me/avatar', updateAvatar);
 
+router.all('*', (req, res) => {
+    res.status(404).send({ message: 'страницы не существует' });
+});
+
 module.exports = router;

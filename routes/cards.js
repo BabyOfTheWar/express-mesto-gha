@@ -14,4 +14,8 @@ router.put('/cards/:cardId/likes', likeCard);
 
 router.delete('/cards/:cardId/likes', dislikeCard);
 
+router.all('*', (req, res) => {
+    res.status(404).send({ message: 'страницы не существует' });
+});
+
 module.exports = router;
