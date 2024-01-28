@@ -5,7 +5,7 @@ const getCards = async (req, res) => {
         const cards = await Card.find();
         res.status(200).json(cards);
     } catch (error) {
-        res.status(500).json({error: 'Внутренняя ошибка сервера'});
+        res.status(500).send({message: 'Внутренняя ошибка сервера'});
     }
 };
 
@@ -14,14 +14,14 @@ const createCard = async (req, res) => {
     const ownerId = req.user._id;
 
     if (!name || name.length < 2 || name.length > 30) {
-        return res.status(400).json({ error: 'Неверный запрос' });
+        return res.status(400).send({ message: 'Неверный запрос' });
     }
 
     try {
         const card = await Card.create({ name, link, owner: ownerId });
         res.status(201).json(card);
     } catch (error) {
-        res.status(400).json({ error: 'Неверный запрос' });
+        res.status(400).send({ message: 'Неверный запрос' });
     }
 };
 
@@ -33,10 +33,10 @@ const deleteCardById = async (req, res) => {
         if (deletedCard) {
             res.status(200).json(deletedCard);
         } else {
-            res.status(404).json({ error: 'Карточка не найдена' });
+            res.status(404).send({ message: 'Карточка не найдена' });
         }
     } catch (error) {
-        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+        res.status(500).send({ message: 'Внутренняя ошибка сервера' });
     }
 };
 
@@ -54,10 +54,10 @@ const likeCard = async (req, res) => {
         if (updatedCard) {
             res.status(200).json(updatedCard);
         } else {
-            res.status(404).json({error: 'Карточка не найдена'});
+            res.status(404).send({message: 'Карточка не найдена'});
         }
     } catch (error) {
-        res.status(500).json({error: 'Внутренняя ошибка сервера'});
+        res.status(500).send({message: 'Внутренняя ошибка сервера'});
     }
 };
 
@@ -75,10 +75,10 @@ const dislikeCard = async (req, res) => {
         if (updatedCard) {
             res.status(200).json(updatedCard);
         } else {
-            res.status(404).json({error: 'Карточка не найдена'});
+            res.status(404).send({message: 'Карточка не найдена'});
         }
     } catch (error) {
-        res.status(500).json({error: 'Внутренняя ошибка сервера'});
+        res.status(500).send({message: 'Внутренняя ошибка сервера'});
     }
 };
 
