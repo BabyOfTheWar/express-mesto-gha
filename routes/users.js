@@ -10,8 +10,8 @@ router.get('/users/:userId', getUserById);
 
 router.post('/users', createUser);
 
-router.post('/users', updateProfile);
+router.post('/users/me', updateProfile);
 
-router.post('/users', updateAvatar);
+router.post('/users/avatar', updateAvatar);
 
 module.exports = router;
