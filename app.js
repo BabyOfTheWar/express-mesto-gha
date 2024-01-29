@@ -29,7 +29,7 @@ const cardsRouter = require('./routes/cards');
 app.use('/', cardsRouter);
 
 app.use('*', (req, res) => {
-  res.status(404).send({ Message: 'такой страницы нет' });
+  res.status(404).json({ message: 'Такой страницы нет' });
 });
 
 app.listen(PORT);
