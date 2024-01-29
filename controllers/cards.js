@@ -43,8 +43,8 @@ const deleteCardById = async (req, res) => {
       res.status(404).send({ message: 'Карточка не найдена' });
     }
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      res.status(400).send({ message: 'Неверный запрос' });
+    if (error.name === 'CastError' && error.kind === 'ObjectId') {
+      res.status(400).send({ message: 'Некорректный формат ID карточки' });
     } else {
       res.status(500).send({ message: 'Внутренняя ошибка сервера' });
     }
@@ -68,7 +68,9 @@ const likeCard = async (req, res) => {
       res.status(404).send({ message: 'Карточка не найдена' });
     }
   } catch (error) {
-    if (error.name === 'ValidationError') {
+    if (error.name === 'CastError' && error.kind === 'ObjectId') {
+      res.status(400).send({ message: 'Некорректный формат ID карточки' });
+    } else if (error.name === 'ValidationError') {
       res.status(400).send({ message: 'Неверный запрос' });
     } else {
       res.status(500).send({ message: 'Внутренняя ошибка сервера' });
@@ -93,7 +95,9 @@ const dislikeCard = async (req, res) => {
       res.status(404).send({ message: 'Карточка не найдена' });
     }
   } catch (error) {
-    if (error.name === 'ValidationError') {
+    if (error.name === 'CastError' && error.kind === 'ObjectId') {
+      res.status(400).send({ message: 'Некорректный формат ID карточки' });
+    } else if (error.name === 'ValidationError') {
       res.status(400).send({ message: 'Неверный запрос' });
     } else {
       res.status(500).send({ message: 'Внутренняя ошибка сервера' });
