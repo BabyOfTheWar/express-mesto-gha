@@ -1,16 +1,18 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
-const getUsers = async (req, res) => {
+const getUsers = async (req, res, next) => {
   try {
     const users = await User.find();
     res.status(200).json(users);
   } catch (error) {
-    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+    next(error);
   }
 };
 
-const getUserById = async (req, res) => {
+const getUserById = async (req, res, next) => {
   const { userId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -30,15 +32,12 @@ const getUserById = async (req, res) => {
     }
     return res.status(404).send({ message: 'Пользователь не найден' });
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      return res.status(400).send({ message: 'Неверный запрос' });
-    }
-    return res.status(500).send({ message: 'Внутренняя ошибка сервера' });
+    next(error);
   }
 };
 
-const createUser = async (req, res) => {
-  const { name, about, avatar } = req.body;
+const createUser = async (req, res, next) => {
+  const { name, about, avatar, email, password } = req.body;
 
   if (!name || name.length < 2 || name.length > 30) {
     return res.status(400).send({ message: 'Некорректная длина поля name' });
@@ -52,18 +51,20 @@ const createUser = async (req, res) => {
     return res.status(400).send({ message: 'В запросе отсутствует обязательное поле avatar' });
   }
 
+  if (!email || !password) {
+    return res.status(400).send({ message: 'В запросе отсутствуют обязательные поля email и password' });
+  }
+
   try {
-    const user = await User.create({ name, about, avatar });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({ name, about, avatar, email, password: hashedPassword });
     return res.status(201).json(user);
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      return res.status(400).send({ message: 'Неверный запрос' });
-    }
-    return res.status(500).send({ message: 'Внутренняя ошибка сервера' });
+    next(error);
   }
 };
 
-const updateProfile = async (req, res) => {
+const updateProfile = async (req, res, next) => {
   const userId = req.user._id;
   const { name, about } = req.body;
 
@@ -87,14 +88,11 @@ const updateProfile = async (req, res) => {
     }
     return res.status(404).send({ message: 'Пользователь не найден' });
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      return res.status(400).send({ message: 'Неверный запрос' });
-    }
-    return res.status(500).send({ message: 'Внутренняя ошибка сервера' });
+    next(error);
   }
 };
 
-const updateAvatar = async (req, res) => {
+const updateAvatar = async (req, res, next) => {
   const userId = req.user._id;
   const { avatar } = req.body;
 
@@ -110,13 +108,42 @@ const updateAvatar = async (req, res) => {
     }
     return res.status(404).send({ message: 'Пользователь не найден' });
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      return res.status(400).send({ message: 'Неверный запрос' });
+    next(error);
+  }
+};
+
+const login = async (req, res, next) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).send({ message: 'В запросе отсутствуют обязательные поля email и password' });
+  }
+
+  try {
+    const user = await User.findOne({ email }).select('+password');
+
+    if (!user) {
+      return res.status(401).send({ message: 'Неправильные почта или пароль' });
     }
-    return res.status(500).send({ message: 'Внутренняя ошибка сервера' });
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).send({ message: 'Неправильные почта или пароль' });
+    }
+
+    const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+    res.status(200).json({ token });
+  } catch (error) {
+    next(error);
   }
 };
 
 module.exports = {
-  getUsers, getUserById, createUser, updateProfile, updateAvatar,
+  getUsers,
+  getUserById,
+  createUser,
+  updateProfile,
+  updateAvatar,
+  login,
 };
