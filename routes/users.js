@@ -2,21 +2,18 @@ const express = require('express');
 
 const {
   celebrate,
-  Joi
+  Joi,
 } = require('celebrate');
 
 const {
   getUsers,
   getUserById,
-  createUser,
   updateProfile,
   updateAvatar,
   getUserMe,
 } = require('../controllers/users');
 
 const authMiddleware = require('../middlewares/auth');
-
-const User = require('../models/user');
 
 const router = express.Router();
 

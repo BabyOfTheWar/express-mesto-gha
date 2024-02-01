@@ -1,10 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const {
-  celebrate,
-  Joi
-} = require('celebrate');
 
 const getUsers = async (req, res, next) => {
   try {
@@ -55,7 +51,7 @@ const createUser = async (req, res, next) => {
     });
     const userWithoutPassword = {
       ...user.toObject(),
-      password: undefined
+      password: undefined,
     };
 
     return res.status(201)
@@ -69,7 +65,7 @@ const updateProfile = async (req, res, next) => {
   const userId = req.user._id;
   const {
     name,
-    about
+    about,
   } = req.body;
 
   if (name && (name.length < 2 || name.length > 30)) {
@@ -87,11 +83,11 @@ const updateProfile = async (req, res, next) => {
       userId,
       {
         name,
-        about
+        about,
       },
       {
         new: true,
-        runValidators: true
+        runValidators: true,
       },
     );
 
@@ -147,7 +143,7 @@ const getUserMe = async (req, res, next) => {
 const login = async (req, res, next) => {
   const {
     email,
-    password
+    password,
   } = req.body;
 
   if (!email || !password) {
