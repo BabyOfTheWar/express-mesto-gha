@@ -104,6 +104,20 @@ const updateAvatar = async (req, res, next) => {
   }
 };
 
+const getUserMe = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'Пользователь не найден' });
+    }
+    return res.status(200).json(user);
+  } catch (error) {
+    return next(error);
+  }
+};
+
 const login = async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -126,7 +140,7 @@ const login = async (req, res, next) => {
 
     const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
     res.cookie('jwt', token, { httpOnly: true });
-    return res.status(200).json({ token });
+    return res.status(200).send({ token });
   } catch (error) {
     return next(error);
   }
@@ -139,4 +153,5 @@ module.exports = {
   updateProfile,
   updateAvatar,
   login,
+  getUserMe,
 };

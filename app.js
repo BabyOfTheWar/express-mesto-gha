@@ -2,7 +2,9 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
-const joi = require('joi');
+const { celebrate, Joi } = require('celebrate');
+const { errors } = require('celebrate');
+const { login, createUser } = require('./controllers/users');
 const authMiddleware = require('./middlewares/auth');
 const errorHandler = require('./middlewares/err-handler');
 
@@ -15,33 +17,44 @@ app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 
-const signupSchema = joi.object({
-  name: joi.string().min(2).max(30),
-  email: joi.string().email().required(),
-  password: joi.string().min(5).required(),
-  about: joi.string().min(2).max(30),
-  avatar: joi.string().pattern(/https?:\/\/(www\.)?[a-zA-Z0-9-._~:/?#@!$&'()*+,;=]+$/),
-});
+app.post(
+  '/signin',
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required(),
+    }),
+  }),
+  login,
+);
 
-const usersController = require('./controllers/users');
-
-app.post('/signup', (req, res, next) => {
-  const { error } = signupSchema.validate(req.body);
-
-  if (error) {
-    return res.status(400).json({ message: error.details[0].message });
-  }
-  return next();
-}, usersController.createUser);
-
-app.post('/signin', usersController.login);
+app.post(
+  '/signup',
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().email().required(),
+      password: Joi.string().required(),
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2).max(30),
+      avatar: Joi.string().pattern(/https?:\/\/(www\.)?[a-zA-Z0-9-._~:/?#@!$&'()*+,;=]+$/),
+    }),
+  }),
+  createUser,
+);
 
 app.use(authMiddleware);
 
-app.use('/users', require('./routes/users'));
-app.use('/cards', require('./routes/cards'));
+const usersRouter = require('./routes/users');
+
+app.use('/', usersRouter);
+
+const cardsRouter = require('./routes/cards');
+
+app.use('/', cardsRouter);
 
 app.use('*', (req, res) => res.status(404).json({ message: 'Такой страницы нет' }));
+
+app.use(errors());
 
 app.use(errorHandler);
 

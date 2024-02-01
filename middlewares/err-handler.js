@@ -19,7 +19,7 @@ const errorHandler = (err, req, res, next) => {
     return res.status(401).json({ message: 'Требуется авторизация' });
   }
 
-  return res.status(500).json({ message: 'Внутренняя ошибка сервера' });
+  return next(err);
 };
 
 module.exports = errorHandler;
