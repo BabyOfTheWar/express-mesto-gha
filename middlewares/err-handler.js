@@ -23,11 +23,11 @@ const errorHandler = (err, req, res, next) => {
     return res.status(404).json({ message: 'Пользователь не найден' });
   }
 
-  if(err.name === 'nameLengthErr') {
+  if (err.name === 'nameLengthErr') {
     return res.status(404).json({ message: 'Некорректная длина поля name' });
   }
 
-  return res.status(500).json({ message: 'Внутренняя ошибка сервера' });
+  return next();
 };
 
 module.exports = errorHandler;

@@ -17,7 +17,7 @@ router.get('/users/:userId', authMiddleware, getUserById);
 
 router.post('/users', authMiddleware, createUser);
 
-router.patch('/users/me',authMiddleware, updateProfile);
+router.patch('/users/me', authMiddleware, updateProfile);
 
 router.patch('/users/me/avatar', authMiddleware, updateAvatar);
 
