@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+
 const JWT_SECRET = '123123123';
 
 module.exports = (req, res, next) => {
@@ -14,6 +15,7 @@ module.exports = (req, res, next) => {
     }
 
     req.user = payload;
-    next();
+    return next();
   });
+  return undefined;
 };

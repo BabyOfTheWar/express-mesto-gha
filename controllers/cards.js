@@ -3,9 +3,9 @@ const Card = require('../models/card');
 const getCards = async (req, res, next) => {
   try {
     const cards = await Card.find();
-    res.status(200).json(cards);
+    return res.status(200).json(cards);
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -21,7 +21,7 @@ const createCard = async (req, res, next) => {
     const card = await Card.create({ name, link, owner: ownerId });
     return res.status(201).json(card);
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -43,12 +43,11 @@ const deleteCardById = async (req, res, next) => {
     const deletedCard = await Card.findByIdAndDelete(cardId);
 
     if (deletedCard) {
-      res.status(200).json(deletedCard);
-    } else {
-      res.status(404).send({ message: 'Карточка не найдена' });
+      return res.status(200).json(deletedCard);
     }
+    return res.status(404).send({ message: 'Карточка не найдена' });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 

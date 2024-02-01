@@ -6,9 +6,9 @@ const User = require('../models/user');
 const getUsers = async (req, res, next) => {
   try {
     const users = await User.find();
-    res.status(200).json(users);
+    return res.status(200).json(users);
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -32,35 +32,27 @@ const getUserById = async (req, res, next) => {
     }
     return res.status(404).send({ message: 'Пользователь не найден' });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
 const createUser = async (req, res, next) => {
-  const { name, about, avatar, email, password } = req.body;
-
-  if (!name || name.length < 2 || name.length > 30) {
-    return res.status(400).send({ message: 'Некорректная длина поля name' });
-  }
-
-  if (!about || about.length < 2 || about.length > 30) {
-    return res.status(400).send({ message: 'Некорректная длина поля about' });
-  }
-
-  if (!avatar) {
-    return res.status(400).send({ message: 'В запросе отсутствует обязательное поле avatar' });
-  }
-
-  if (!email || !password) {
-    return res.status(400).send({ message: 'В запросе отсутствуют обязательные поля email и password' });
-  }
+  const {
+    name = 'Жак-Ив Кусто',
+    about = 'Исследователь',
+    avatar = 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    email,
+    password,
+  } = req.body;
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, about, avatar, email, password: hashedPassword });
+    const user = await User.create({
+      name, about, avatar, email, password: hashedPassword,
+    });
     return res.status(201).json(user);
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -88,7 +80,7 @@ const updateProfile = async (req, res, next) => {
     }
     return res.status(404).send({ message: 'Пользователь не найден' });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -108,7 +100,7 @@ const updateAvatar = async (req, res, next) => {
     }
     return res.status(404).send({ message: 'Пользователь не найден' });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -133,9 +125,10 @@ const login = async (req, res, next) => {
     }
 
     const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
-    res.status(200).json({ token });
+    res.cookie('jwt', token, { httpOnly: true });
+    return res.status(200).json({ token });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
