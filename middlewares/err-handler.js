@@ -19,7 +19,15 @@ const errorHandler = (err, req, res, next) => {
     return res.status(401).json({ message: 'Требуется авторизация' });
   }
 
-  return next(err);
+  if (err.name === 'NotFoundError' || err.code === 404) {
+    return res.status(404).json({ message: 'Пользователь не найден' });
+  }
+
+  if(err.name === 'nameLengthErr') {
+    return res.status(404).json({ message: 'Некорректная длина поля name' });
+  }
+
+  return res.status(500).json({ message: 'Внутренняя ошибка сервера' });
 };
 
 module.exports = errorHandler;

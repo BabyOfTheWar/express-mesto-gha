@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const errorHandler = require('../middlewares/err-handler');
 
 const getUsers = async (req, res, next) => {
   try {
@@ -14,11 +14,6 @@ const getUsers = async (req, res, next) => {
 
 const getUserById = async (req, res, next) => {
   const { userId } = req.params;
-
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return res.status(400).send({ message: 'Некорректный формат ID пользователя' });
-  }
-
   try {
     const user = await User.findById(userId);
 
@@ -30,7 +25,9 @@ const getUserById = async (req, res, next) => {
         _id: user._id,
       });
     }
-    return res.status(404).send({ message: 'Пользователь не найден' });
+    const notFoundError = new Error('NotFoundError');
+    notFoundError.code = 404;
+    throw notFoundError;
   } catch (error) {
     return next(error);
   }
@@ -50,7 +47,9 @@ const createUser = async (req, res, next) => {
     const user = await User.create({
       name, about, avatar, email, password: hashedPassword,
     });
-    return res.status(201).json(user);
+    const userWithoutPassword = { ...user.toObject(), password: undefined };
+
+    return res.status(201).json(userWithoutPassword);
   } catch (error) {
     return next(error);
   }
@@ -61,7 +60,9 @@ const updateProfile = async (req, res, next) => {
   const { name, about } = req.body;
 
   if (name && (name.length < 2 || name.length > 30)) {
-    return res.status(400).send({ message: 'Некорректная длина поля name' });
+    const nameLengthErr = new Error('nameLengthErr');
+    nameLengthErr.code = 400;
+    throw nameLengthErr;
   }
 
   if (about && (about.length < 2 || about.length > 30)) {
