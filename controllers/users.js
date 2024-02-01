@@ -59,9 +59,7 @@ const updateProfile = async (req, res, next) => {
   const { name, about } = req.body;
 
   if (name && (name.length < 2 || name.length > 30)) {
-    const nameLengthErr = new Error('nameLengthErr');
-    nameLengthErr.code = 400;
-    throw nameLengthErr;
+    return res.status(400).send({ message: 'Некорректная длина поля name' });
   }
 
   if (about && (about.length < 2 || about.length > 30)) {
