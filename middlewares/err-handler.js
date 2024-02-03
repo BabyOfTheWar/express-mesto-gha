@@ -1,6 +1,10 @@
 const constants = require('../utils/constants');
 
 const errorHandler = (err, req, res, next) => {
+  if (err.status) {
+    return res.status(err.status).json({ message: err.message });
+  }
+
   if (err.name === 'ValidationError') {
     return res.status(constants.HTTP_STATUS.BAD_REQUEST).json({ message: 'Неверный запрос' });
   }
@@ -29,7 +33,7 @@ const errorHandler = (err, req, res, next) => {
     return res.status(constants.HTTP_STATUS.NOT_FOUND).json({ message: 'Некорректная длина поля name' });
   }
 
-  return next();
+  return next(err);
 };
 
 module.exports = errorHandler;

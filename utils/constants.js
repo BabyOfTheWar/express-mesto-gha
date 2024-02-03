@@ -1,5 +1,3 @@
-const JWT_SECRET = 'some-secret-key';
-
 module.exports = {
   HTTP_STATUS: {
     OK: 200,
@@ -17,5 +15,4 @@ module.exports = {
     NOT_FOUND_MESSAGE: 'Не найдено',
     NO_ACCESS: 'У вас нет прав на это действие',
   },
-  JWT_SECRET,
 };

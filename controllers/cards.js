@@ -4,10 +4,10 @@ const constants = require('../utils/constants');
 const getCards = async (req, res, next) => {
   try {
     const cards = await Card.find();
-    return res.status(constants.HTTP_STATUS.OK)
+    res.status(constants.HTTP_STATUS.OK)
       .json(cards);
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -24,10 +24,10 @@ const createCard = async (req, res, next) => {
       link,
       owner: ownerId,
     });
-    return res.status(constants.HTTP_STATUS.CREATED)
+    res.status(constants.HTTP_STATUS.CREATED)
       .json(card);
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -39,26 +39,34 @@ const deleteCardById = async (req, res, next) => {
     const card = await Card.findById(cardId);
 
     if (!card) {
-      return res.status(constants.HTTP_STATUS.NOT_FOUND)
-        .send({ message: constants.ERROR_MESSAGES.NOT_FOUND_MESSAGE });
+      return next({
+        status: constants.HTTP_STATUS.NOT_FOUND,
+        message: constants.ERROR_MESSAGES.NOT_FOUND_MESSAGE,
+      });
     }
 
     if (card.owner.toString() !== userId) {
-      return res.status(constants.HTTP_STATUS.NO_ACCESS)
-        .send({ message: constants.ERROR_MESSAGES.NO_ACCESS });
+      return next({
+        status: constants.HTTP_STATUS.NO_ACCESS,
+        message: constants.ERROR_MESSAGES.NO_ACCESS,
+      });
     }
 
     const deletedCard = await Card.findByIdAndDelete(cardId);
 
     if (deletedCard) {
-      return res.status(constants.HTTP_STATUS.OK)
+      res.status(constants.HTTP_STATUS.OK)
         .json(deletedCard);
+    } else {
+      next({
+        status: constants.HTTP_STATUS.NOT_FOUND,
+        message: constants.ERROR_MESSAGES.NOT_FOUND_MESSAGE,
+      });
     }
-    return res.status(constants.HTTP_STATUS.NOT_FOUND)
-      .send({ message: constants.ERROR_MESSAGES.NOT_FOUND_MESSAGE });
   } catch (error) {
-    return next(error);
+    next(error);
   }
+  return next();
 };
 
 const likeCard = async (req, res, next) => {
@@ -79,8 +87,10 @@ const likeCard = async (req, res, next) => {
       res.status(constants.HTTP_STATUS.OK)
         .json(updatedCard);
     } else {
-      res.status(constants.HTTP_STATUS.NOT_FOUND)
-        .send({ message: constants.ERROR_MESSAGES.NOT_FOUND_MESSAGE });
+      next({
+        status: constants.HTTP_STATUS.NOT_FOUND,
+        message: constants.ERROR_MESSAGES.NOT_FOUND_MESSAGE,
+      });
     }
   } catch (error) {
     next(error);
@@ -105,8 +115,10 @@ const dislikeCard = async (req, res, next) => {
       res.status(constants.HTTP_STATUS.OK)
         .json(updatedCard);
     } else {
-      res.status(constants.HTTP_STATUS.NOT_FOUND)
-        .send({ message: constants.ERROR_MESSAGES.NOT_FOUND_MESSAGE });
+      next({
+        status: constants.HTTP_STATUS.NOT_FOUND,
+        message: constants.ERROR_MESSAGES.NOT_FOUND_MESSAGE,
+      });
     }
   } catch (error) {
     next(error);

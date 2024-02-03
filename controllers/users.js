@@ -6,10 +6,10 @@ const constants = require('../utils/constants');
 const getUsers = async (req, res, next) => {
   try {
     const users = await User.find();
-    return res.status(constants.HTTP_STATUS.OK)
+    res.status(constants.HTTP_STATUS.OK)
       .json(users);
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -19,18 +19,21 @@ const getUserById = async (req, res, next) => {
     const user = await User.findById(userId);
 
     if (user) {
-      return res.status(constants.HTTP_STATUS.OK)
+      res.status(constants.HTTP_STATUS.OK)
         .json({
           name: user.name,
           about: user.about,
           avatar: user.avatar,
           _id: user._id,
         });
+    } else {
+      next({
+        status: constants.HTTP_STATUS.NOT_FOUND,
+        message: constants.ERROR_MESSAGES.NOT_FOUND_MESSAGE,
+      });
     }
-    return res.status(constants.HTTP_STATUS.NOT_FOUND)
-      .send({ message: constants.ERROR_MESSAGES.NOT_FOUND_MESSAGE });
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -57,10 +60,10 @@ const createUser = async (req, res, next) => {
       password: undefined,
     };
 
-    return res.status(constants.HTTP_STATUS.CREATED)
+    res.status(constants.HTTP_STATUS.CREATED)
       .json(userWithoutPassword);
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -85,13 +88,16 @@ const updateProfile = async (req, res, next) => {
     );
 
     if (updatedUser) {
-      return res.status(constants.HTTP_STATUS.OK)
+      res.status(constants.HTTP_STATUS.OK)
         .json(updatedUser);
+    } else {
+      next({
+        status: constants.HTTP_STATUS.NOT_FOUND,
+        message: constants.ERROR_MESSAGES.NOT_FOUND_MESSAGE,
+      });
     }
-    return res.status(constants.HTTP_STATUS.NOT_FOUND)
-      .send({ message: constants.ERROR_MESSAGES.NOT_FOUND_MESSAGE });
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -107,13 +113,16 @@ const updateAvatar = async (req, res, next) => {
     );
 
     if (updatedUser) {
-      return res.status(constants.HTTP_STATUS.OK)
+      res.status(constants.HTTP_STATUS.OK)
         .json(updatedUser);
+    } else {
+      next({
+        status: constants.HTTP_STATUS.NOT_FOUND,
+        message: constants.ERROR_MESSAGES.NOT_FOUND_MESSAGE,
+      });
     }
-    return res.status(constants.HTTP_STATUS.NOT_FOUND)
-      .send({ message: constants.ERROR_MESSAGES.NOT_FOUND_MESSAGE });
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -122,14 +131,17 @@ const getUserMe = async (req, res, next) => {
     const userId = req.user._id;
     const user = await User.findById(userId);
 
-    if (!user) {
-      return res.status(constants.HTTP_STATUS.NOT_FOUND)
-        .json({ message: constants.ERROR_MESSAGES.NOT_FOUND_MESSAGE });
+    if (user) {
+      res.status(constants.HTTP_STATUS.OK)
+        .json(user);
+    } else {
+      next({
+        status: constants.HTTP_STATUS.NOT_FOUND,
+        message: constants.ERROR_MESSAGES.NOT_FOUND_MESSAGE,
+      });
     }
-    return res.status(constants.HTTP_STATUS.OK)
-      .json(user);
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -144,23 +156,29 @@ const login = async (req, res, next) => {
       .select('+password');
 
     if (!user) {
-      return res.status(constants.HTTP_STATUS.UNAUTHORIZED)
-        .send({ message: 'Неправильные почта или пароль' });
+      next({
+        status: constants.HTTP_STATUS.UNAUTHORIZED,
+        message: 'Неправильные почта или пароль',
+      });
+    } else {
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+
+      if (!isPasswordValid) {
+        next({
+          status: constants.HTTP_STATUS.UNAUTHORIZED,
+          message: 'Неправильные почта или пароль',
+        });
+      } else {
+        const secretKey = process.env.NODE_ENV === 'production' ? process.env.JWT_SECRET : 'dev-secret';
+        const token = jwt.sign({ _id: user._id }, secretKey, { expiresIn: '7d' });
+
+        res.cookie('jwt', token, { httpOnly: true });
+        res.status(constants.HTTP_STATUS.OK)
+          .send({ token });
+      }
     }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-      return res.status(constants.HTTP_STATUS.UNAUTHORIZED)
-        .send({ message: 'Неправильные почта или пароль' });
-    }
-
-    const token = jwt.sign({ _id: user._id }, constants.JWT_SECRET, { expiresIn: '7d' });
-    res.cookie('jwt', token, { httpOnly: true });
-    return res.status(constants.HTTP_STATUS.OK)
-      .send({ token });
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
